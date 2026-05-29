@@ -444,7 +444,7 @@ def get_user_orders(request, user_id):
                         customer_details = {}
                     
                     orders_with_items.append({
-                        "order_id": order_dict.get('id'),
+                        "order_id": order_dict.get('order_id') or order_dict.get('id'),
                         "order_date": order_dict.get('created_at'),
                         "total_amount": order_dict.get('amount'),
                         "payment_method": order_dict.get('payment_method'),

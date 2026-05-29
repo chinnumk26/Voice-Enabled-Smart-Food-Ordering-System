@@ -26,8 +26,9 @@ const CartPage = () => {
             navigate('/login', { state: { from: { pathname: '/cart' } } })
             return
         }
-        setShowPaymentModal(true)
+        navigate('/payment', { state: { cartItems, total } })
     }
+
 
     // ── Cash on Delivery ─────────────────────────────────────────────────────
     const handleCOD = async () => {
@@ -137,22 +138,6 @@ const CartPage = () => {
                 <div className="order-popup"><p>{orderMessage}</p></div>
             )}
 
-            {showPaymentModal && (
-                <div className="payment-modal" id="payment-modal">
-                    <div className="payment-modal-content">
-                        <h3>Select Payment Method</h3>
-                        <button className="payment-option cod" onClick={handleCOD} disabled={loading}>
-                            💵 Cash on Delivery
-                        </button>
-                        <button className="payment-option upi" onClick={handleUPI} disabled={loading}>
-                            📱 UPI / Card / NetBanking
-                        </button>
-                        <button className="payment-option cancel" onClick={() => setShowPaymentModal(false)}>
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            )}
 
             <h1>Your Cart</h1>
             {cartItems.length === 0 ? (

@@ -40,17 +40,35 @@ export const GlobalStateProvider = ({ children }) => {
 
   // ── Fetch food items ──────────────────────────────────────────────────────────
   const fetchFoodData = useCallback(async () => {
-    // If not logged in, don't show any food items (as requested)
-    if (!localStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn') === 'false') {
-      setFoodData([])
-      setQuantity(0)
-      setDisplayCart(false)
-      return
+    setLoading(true)
+    try {
+      const res = await fetch('/food-items/')
+      if (res.ok) {
+        const data = await res.json()
+        if (data && data.length > 0) {
+          const formatted = data.map(item => ({
+            FoodID: item.foodid || item.FoodID,
+            FoodName: item.foodname || item.FoodName,
+            Price: parseFloat(item.price || item.Price || 0),
+            Category: item.category || item.Category || 'Other',
+            Quantity: item.quantity || item.Quantity || 0,
+            ImageName: item.imagename || item.ImageName,
+            Description: item.description || item.Description || ''
+          }))
+          setFoodData(formatted)
+          syncCartState(formatted)
+          setLoading(false)
+          return
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching food items from Django backend, falling back to local dataset:', error)
     }
 
-    // Use hardcoded items for stability instead of Django
+    // Fallback to SAMPLE_FOODS if backend fails or doesn't return data
     setFoodData(SAMPLE_FOODS)
     syncCartState(SAMPLE_FOODS)
+    setLoading(false)
   }, [syncCartState])
 
   // ── Firebase Auth Listener + Session Setup ──────────────────────────────────
@@ -62,6 +80,9 @@ export const GlobalStateProvider = ({ children }) => {
       localStorage.setItem('sessionId', sid)
     }
     setSessionId(sid)
+
+    // Load initial food items immediately (allows guest browsing)
+    fetchFoodData()
 
     // 2. Firebase Auth listener
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -79,7 +100,7 @@ export const GlobalStateProvider = ({ children }) => {
       } else {
         setUser(null)
         setIsLoggedIn(false)
-        setFoodData([]) // Clear items on logout
+        fetchFoodData() // Load items as guest on logout
         localStorage.removeItem('user')
         localStorage.setItem('isLoggedIn', 'false')
       }

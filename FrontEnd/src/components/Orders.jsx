@@ -21,6 +21,28 @@ const OrdersPage = () => {
 
     const fetchOrders = async () => {
         try {
+            const res = await fetch(`/orders/${user.user_id}/`)
+            if (res.ok) {
+                const data = await res.json()
+                if (data && data.length > 0) {
+                    const formatted = data.map(order => ({
+                        order_id: order.order_id || order.id || 'ORD_' + Math.random().toString(36).substr(2, 9),
+                        order_date: order.order_date || new Date(),
+                        total_amount: parseFloat(order.total_amount || 0),
+                        order_status: order.order_status || 'placed',
+                        payment_method: order.payment_method || 'COD',
+                        items: order.items || []
+                    }))
+                    setOrders(formatted)
+                    setLoading(false)
+                    return
+                }
+            }
+        } catch (djangoErr) {
+            console.warn("Django fetchOrders failed, trying Firestore fallback:", djangoErr)
+        }
+
+        try {
             const { collection, query, where, getDocs, orderBy } = await import('firebase/firestore')
             const { db } = await import('../firebase')
 
@@ -34,7 +56,7 @@ const OrdersPage = () => {
             const ordersData = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
-                // Map Firestore fields to match original component expectations
+                order_id: doc.data().orderId || doc.id,
                 order_date: doc.data().createdAt?.toDate() || new Date(),
                 total_amount: doc.data().amount,
                 order_status: doc.data().status,
@@ -44,7 +66,7 @@ const OrdersPage = () => {
             setOrders(ordersData)
             setLoading(false)
         } catch (error) {
-            console.error("Error fetching orders:", error)
+            console.error("All order fetch options failed:", error)
             setOrders([])
             setLoading(false)
         }

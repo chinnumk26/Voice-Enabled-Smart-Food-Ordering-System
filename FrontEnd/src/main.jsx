@@ -9,6 +9,8 @@ import CartPage from './components/CartPage';
 import HomePage from './components/HomePage';
 import ProfilePage from './components/ProfilePage';
 import OrdersPage from './components/Orders';
+import PaymentPage from './components/PaymentPage';
+import NotFound from './components/NotFound';
 
 
 const router = createBrowserRouter([
@@ -39,6 +41,14 @@ const router = createBrowserRouter([
       {
         path:'/orders',
         element:<OrdersPage />,
+      },
+      {
+        path:'/payment',
+        element:<PaymentPage />,
+      },
+      {
+        path:'*',
+        element:<NotFound />,
       },
     ]
   }
