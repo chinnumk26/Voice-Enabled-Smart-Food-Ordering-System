@@ -87,8 +87,8 @@ Return ONLY the JSON object.
     return res.status(200).json({ status: "success", aiResponse });
   } catch (error) {
     console.error("Voice processing error:", error);
-    return res.status(200).json({ 
-      status: "fallback", 
+    return res.status(200).json({
+      status: "fallback",
       aiResponse: { response: "I'm sorry, I'm having trouble thinking. Please try again.", command: "UNKNOWN" }
     });
   }
